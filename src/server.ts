@@ -1,6 +1,3 @@
-// const express = require('express');
-// const WebSocket = require('ws');
-//const { Client } = require("pg");
 import express from "express";
 import { WebSocketServer } from "ws";
 import pkg from "pg";
@@ -18,7 +15,7 @@ const db = new Client({
   database: process.env.CLEARDB_DATABASE_DB,
 });
 
-db.connect((err) => {
+db.connect((err: Error | null) => {
   if (err) {
     console.error("DB 연결 실패:", err);
     return;
@@ -40,26 +37,28 @@ wss.on("connection", (ws) => {
   // 기존 메시지 로드
   db.query("SELECT * FROM messages ORDER BY timestamp ASC", (err, results) => {
     if (err) throw err;
-    results.rows.forEach((row) => {
-      ws.send(
-        JSON.stringify({
-          username: row.username,
-          message: row.message,
-          timestamp: row.timestamp,
-        })
-      );
-    });
+    results.rows.forEach(
+      (row: { username: string; message: string; timestamp: Date }) => {
+        ws.send(
+          JSON.stringify({
+            username: row.username,
+            message: row.message,
+            timestamp: row.timestamp,
+          })
+        );
+      }
+    );
   });
 
   // 메시지 전송 및 저장
-  ws.on("message", (message) => {
+  ws.on("message", (message: string) => {
     const msgData = JSON.parse(message);
     const { username, message: chatMessage } = msgData;
 
     db.query(
       "INSERT INTO messages (username, message) VALUES ($1, $2)",
       [username, chatMessage],
-      (err) => {
+      (err: Error) => {
         if (err) throw err;
         console.log("DB에 메시지 저장 성공");
       }

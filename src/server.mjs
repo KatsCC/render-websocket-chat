@@ -65,7 +65,7 @@ wss.on("connection", (ws) => {
       }
     );
 
-    wss.clients.forEach((client) => {
+    ws.clients.forEach((client) => {
       if (client.readyState === WebSocketServer.OPEN) {
         client.send(message);
         console.log("Sent message to client:", message);

@@ -1,9 +1,10 @@
 // const express = require('express');
 // const WebSocket = require('ws');
-// const { Client } = require('pg');
+//const { Client } = require("pg");
 import express from "express";
-import WebSocket from "ws";
-import { Client } from "pg";
+import { WebSocketServer } from "ws";
+import pkg from "pg";
+const { Client } = pkg;
 
 // Express 서버 설정
 const app = express();
@@ -31,7 +32,7 @@ const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws) => {
   console.log("클라이언트가 연결되었습니다.");

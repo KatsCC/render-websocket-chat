@@ -3,11 +3,9 @@ import { WebSocketServer } from "ws";
 import pkg from "pg";
 const { Client } = pkg;
 
-// Express 서버 설정
 const app = express();
 const port = process.env.PORT || 3000;
 
-// PostgreSQL 연결 정보는 환경 변수로부터 가져옵니다.
 const db = new Client({
   host: process.env.CLEARDB_DATABASE_HOST,
   user: process.env.CLEARDB_DATABASE_USER,
@@ -34,23 +32,20 @@ const wss = new WebSocketServer({ server });
 wss.on("connection", (ws) => {
   console.log("클라이언트가 연결되었습니다.");
 
-  // 기존 메시지 로드
   db.query("SELECT * FROM messages ORDER BY timestamp ASC", (err, results) => {
     if (err) throw err;
-    results.rows.forEach(
-      (row: { username: string; message: string; timestamp: Date }) => {
-        ws.send(
-          JSON.stringify({
-            username: row.username,
-            message: row.message,
-            timestamp: row.timestamp,
-          })
-        );
-      }
+
+    const messages = results.rows.map(
+      (row: { username: string; message: string; timestamp: Date }) => ({
+        username: row.username,
+        message: row.message,
+        timestamp: row.timestamp,
+      })
     );
+
+    ws.send(JSON.stringify({ type: "history", messages }));
   });
 
-  // 메시지 전송 및 저장
   ws.on("message", (message: string) => {
     const msgData = JSON.parse(message);
     const { username, message: chatMessage } = msgData;
